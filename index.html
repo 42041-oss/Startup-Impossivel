@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroPhone Technologies Inc. — AeroMode™ (Modo Avião Real)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        aero: {
+                            950: '#030712',
+                            900: '#0b1121',
+                            800: '#131c33',
+                            500: '#0ea5e9',
+                            400: '#38bdf8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom animations for the AeroMode™ flight simulation */
+        @keyframes violentVibrate {
+            0% { transform: translate(0px, 0px) rotate(0deg); }
+            15% { transform: translate(-4px, 3px) rotate(-1.5deg); }
+            30% { transform: translate(4px, -3px) rotate(1.5deg); }
+            45% { transform: translate(-5px, -2px) rotate(-2deg); }
+            60% { transform: translate(5px, 3px) rotate(1.8deg); }
+            75% { transform: translate(-3px, 4px) rotate(-1.2deg); }
+            90% { transform: translate(4px, -4px) rotate(1.5deg); }
+            100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+
+        @keyframes liftoffHover {
+            0% { transform: translateY(0px) scale(1) rotate(0deg); }
+            25% { transform: translateY(-48px) scale(1.04) rotate(-4deg); }
+            50% { transform: translateY(-62px) scale(1.06) rotate(5deg); }
+            75% { transform: translateY(-54px) scale(1.05) rotate(-6deg); }
+            100% { transform: translateY(-65px) scale(1.06) rotate(4deg); }
+        }
+
+        @keyframes crashFall {
+            0% { transform: translateY(-65px) scale(1.06) rotate(4deg); }
+            70% { transform: translateY(22px) scale(0.97) rotate(14deg); }
+            85% { transform: translateY(10px) scale(0.99) rotate(10deg); }
+            100% { transform: translateY(14px) scale(0.98) rotate(11deg); }
+        }
+
+        .phone-vibrating {
+            animation: violentVibrate 0.08s infinite linear;
+        }
+
+        .phone-flying {
+            animation: liftoffHover 1.8s ease-in-out forwards;
+            box-shadow: 0 45px 80px -15px rgba(56, 189, 248, 0.45), 0 0 40px rgba(249, 115, 22, 0.4);
+        }
+
+        .phone-crashed {
+            animation: crashFall 0.45s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+        }
+
+        .glass-grid {
+            background-image: radial-gradient(rgba(56, 189, 248, 0.14) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        /* Custom Range Slider Styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 8px;
+            border-radius: 999px;
+            background: #1e293b;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -6px;
+            height: 20px;
+            width: 20px;
+            border-radius: 999px;
+            background: #38bdf8;
+            border: 3px solid #0f172a;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-aero-950 text-slate-100 font-sans antialiased selection:bg-sky-500 selection:text-white overflow-x-hidden">
+
+    <!-- STICKY NAVBAR -->
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-aero-950/80 border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between gap-4">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/25 group-hover:scale-105 transition-transform">
+                    <svg class="w-6 h-6 text-white transform -rotate-45" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-extrabold text-lg tracking-tight text-white">AeroPhone</span>
+                    <span class="hidden sm:inline-block ml-1.5 text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">Inc.</span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#problema" class="hover:text-sky-400 transition">O Problema</a>
+                <a href="#tecnologia" class="hover:text-sky-400 transition">Tecnologia</a>
+                <a href="#simulador-planos" class="hover:text-sky-400 transition">Simulador de Planos</a>
+                <a href="#roadmap" class="hover:text-sky-400 transition">Roadmap v2.0</a>
+            </nav>
+
+            <!-- Action Controls -->
+            <div class="flex items-center gap-2.5">
+                <button id="soundToggleBtn" onclick="toggleAudio()" title="Ativar/Desativar Efeitos Sonoros Sintetizados" class="px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-sky-500/50 transition text-xs font-mono flex items-center gap-1.5 cursor-pointer">
+                    <span id="soundIcon">🔇</span>
+                    <span class="hidden sm:inline" id="soundLabel">Som: OFF</span>
+                </button>
+                <button onclick="openModal('Rodada Seed — Captação US$ 5M', 'Nossa rodada Seed de US$ 5 milhões está 94% subscrita por fundos especializados em reposição de telas OLED e fabricantes de capinhas anti-impacto. Deixe seu aporte mínimo de US$ 250k no formulário de telemetria.')" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs sm:text-sm transition shadow-lg shadow-sky-500/25 cursor-pointer">
+                    Investir (Seed $5M)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION WITH INTERACTIVE 3D/CSS FLIGHT SIMULATOR -->
+    <section class="relative pt-12 pb-20 lg:pt-20 lg:pb-28 glass-grid overflow-hidden">
+        <!-- Ambient Glows -->
+        <div class="absolute top-10 left-1/4 w-96 h-96 bg-sky-500/15 blur-[130px] rounded-full pointer-events-none"></div>
+        <div class="absolute bottom-10 right-1/4 w-96 h-96 bg-indigo-600/15 blur-[130px] rounded-full pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+                
+                <!-- Left Column: Pitch & CTAs -->
+                <div class="lg:col-span-7 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-mono font-bold tracking-wider uppercase mb-6">
+                        <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+                        SÉRIE SEED • DEEP-TECH DE AVIAÇÃO DE BOLSO
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.08] mb-6">
+                        Por que apenas desconectar, quando você pode <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400">decolar?</span>
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8">
+                        Durante décadas, o ícone de avião no seu smartphone foi uma mentira corporativa. Apresentamos o <strong class="text-white">AeroMode™ (Modo Avião Real)</strong>: overclocking extremo do motor háptico a <span class="font-mono text-sky-400">48.000 RPM</span> combinado com superaquecimento controlado da bateria para transformar seu aparelho em uma aeronave sem asas, sem leme e sem garantia.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
+                        <button id="heroLaunchBtn" onclick="triggerFlightSimulation()" class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-extrabold text-base shadow-xl shadow-sky-500/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2.5 cursor-pointer">
+                            <span>✈️</span>
+                            <span>Testar Decolagem Agora</span>
+                        </button>
+                        <a href="#simulador-planos" class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-base transition flex items-center justify-center gap-2">
+                            <span>📊</span>
+                            <span>Simular Planos</span>
+                        </a>
+                    </div>
+
+                    <!-- Quick Telemetry Bar -->
+                    <div class="grid grid-cols-3 gap-3 sm:gap-5 max-w-xl mx-auto lg:mx-0 p-4 rounded-2xl bg-slate-900/70 border border-slate-800">
+                        <div>
+                            <div class="text-[11px] font-mono text-slate-400 uppercase">Rotação Háptica</div>
+                            <div id="statRpm" class="text-lg sm:text-xl font-mono font-extrabold text-sky-400">0 RPM</div>
+                        </div>
+                        <div class="border-x border-slate-800 px-3">
+                            <div class="text-[11px] font-mono text-slate-400 uppercase">Núcleo Térmico</div>
+                            <div id="statTemp" class="text-lg sm:text-xl font-mono font-extrabold text-amber-400">34.0 °C</div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] font-mono text-slate-400 uppercase">Altitude Máx.</div>
+                            <div id="statAlt" class="text-lg sm:text-xl font-mono font-extrabold text-emerald-400">0.0 cm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Smartphone Flight Simulator -->
+                <div class="lg:col-span-5 flex flex-col items-center">
+                    <div class="relative w-full max-w-[340px] flex flex-col items-center pt-10 pb-6">
+                        
+                        <!-- Altitude Ruler Indicator -->
+                        <div class="absolute right-1 sm:right-2 top-12 bottom-16 w-12 flex flex-col justify-between items-end text-[10px] font-mono text-slate-500 select-none pointer-events-none">
+                            <span class="text-sky-400 font-bold">11.2 cm —</span>
+                            <span>8.0 cm —</span>
+                            <span>4.0 cm —</span>
+                            <span class="text-slate-400">0.0 cm —</span>
+                        </div>
+
+                        <!-- 3D/CSS Interactive Smartphone -->
+                        <div id="phoneDevice" class="relative w-[265px] h-[510px] rounded-[42px] bg-slate-900 border-[6px] border-slate-700 shadow-2xl shadow-black/80 overflow-hidden transition-colors duration-300 select-none">
+                            
+                            <!-- Dynamic Island / Notch -->
+                            <div class="w-24 h-6 bg-black rounded-full mx-auto mt-3 flex items-center justify-end px-2.5">
+                                <span id="statusLed" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            </div>
+
+                            <!-- Phone Screen Content -->
+                            <div class="p-5 flex flex-col justify-between h-[calc(100%-36px)] relative z-10">
+                                
+                                <!-- Top Status Bar -->
+                                <div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                                    <span>AeroOS 18.4</span>
+                                    <span id="chromeTabsBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300">Chrome: 1 aba</span>
+                                </div>
+
+                                <!-- Control Center Card -->
+                                <div class="my-auto space-y-4">
+                                    <div class="p-4 rounded-3xl bg-slate-800/80 border border-slate-700/80 backdrop-blur-md">
+                                        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-3 text-center">Central de Propulsão</div>
+                                        
+                                        <!-- Airplane Toggle Button -->
+                                        <button id="phoneAirplaneBtn" onclick="triggerFlightSimulation()" class="w-full py-5 rounded-2xl bg-slate-900 hover:bg-slate-950 border border-slate-700 flex flex-col items-center justify-center gap-2 transition group cursor-pointer">
+                                            <div id="airplaneIconCircle" class="w-14 h-14 rounded-full bg-sky-500/20 text-sky-400 group-hover:bg-sky-500 group-hover:text-slate-950 flex items-center justify-center transition-all shadow-lg">
+                                                <svg class="w-7 h-7 transform -rotate-45" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                                                </svg>
+                                            </div>
+                                            <span id="phoneModeText" class="text-xs font-extrabold tracking-wide text-white uppercase">Ativar AeroMode™</span>
+                                            <span class="text-[10px] font-mono text-slate-400">Toque para iniciar decolagem</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Live Telemetry Log Box -->
+                                    <div class="p-3.5 rounded-2xl bg-black/70 border border-slate-800 font-mono text-[11px] leading-relaxed">
+                                        <div class="flex items-center justify-between text-slate-500 text-[10px] mb-1">
+                                            <span>TELEMETRIA AO VIVO</span>
+                                            <span id="flightPhaseTag" class="text-sky-400 font-bold">STANDBY</span>
+                                        </div>
+                                        <p id="telemetryLog" class="text-slate-300 min-h-[44px]">
+                                            Aguardando autorização da torre de controle da sua mesa...
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Action / Repair Button -->
+                                <div class="pt-2">
+                                    <button id="repairPhoneBtn" onclick="resetFlightSimulation()" class="hidden w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wide shadow-lg transition cursor-pointer">
+                                        🩹 Colar Fita Adesiva & Resetar
+                                    </button>
+                                    <div id="safeHintText" class="text-center text-[10px] font-mono text-slate-500">
+                                        Garantia anulada ao tocar no ícone.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cracked Glass SVG Overlay (Hidden until crash) -->
+                            <svg id="crackedScreenOverlay" class="hidden absolute inset-0 w-full h-full pointer-events-none z-20 opacity-90" viewBox="0 0 265 510" fill="none">
+                                <!-- Impact Point -->
+                                <circle cx="215" cy="435" r="8" fill="rgba(255,255,255,0.45)"/>
+                                <circle cx="215" cy="435" r="22" stroke="rgba(255,255,255,0.65)" stroke-width="1.5"/>
+                                <circle cx="215" cy="435" r="46" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>
+                                <!-- Spiderweb Cracks -->
+                                <path d="M215 435 L15 110 M215 435 L95 15 M215 435 L190 5 M215 435 L260 180 M215 435 L5 310 M215 435 L45 495 M215 435 L255 505 M130 270 L185 210 L245 240 M75 190 L135 160 L195 120 M55 340 L120 355 L165 390" stroke="rgba(255,255,255,0.85)" stroke-width="1.6" stroke-linecap="round"/>
+                                <path d="M215 435 L110 230 L40 165 M215 435 L175 290 L250 275 M145 330 L95 410 L25 435" stroke="rgba(186,230,253,0.7)" stroke-width="1"/>
+                            </svg>
+
+                            <!-- Thermal Heat Glow Overlay -->
+                            <div id="thermalOverlay" class="hidden absolute inset-0 bg-gradient-to-t from-orange-600/35 via-amber-500/10 to-transparent pointer-events-none z-10 animate-pulse"></div>
+                        </div>
+
+                        <!-- Table Surface Shadow -->
+                        <div id="tableSurface" class="w-64 h-3 rounded-full bg-sky-500/20 blur-sm mt-3 transition-all duration-300"></div>
+                        <span class="text-[11px] font-mono text-slate-500 mt-1">Superfície da Mesa (0.0 cm)</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: O PROBLEMA VS. A SOLUÇÃO -->
+    <section id="problema" class="py-20 border-t border-slate-800/80 bg-aero-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-sky-400">Disrupção Gravitacional</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-white mt-2 mb-4">O Problema vs. A Solução</h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Comparativo técnico entre a estagnação do mercado tradicional de sistemas operacionais e a revolução cinética do AeroMode™.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Legacy Card -->
+                <div class="rounded-3xl bg-slate-900/70 border border-slate-800 p-8 relative overflow-hidden">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-slate-400 text-xs font-mono mb-5">
+                        ❌ MODO AVIÃO LEGADO (1999–2025)
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-200 mb-4">Passivo, Estático e Preso à Gravidade</h3>
+                    <ul class="space-y-3.5 text-sm text-slate-400">
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 font-bold">✕</span>
+                            <span>Apenas desliga o Wi-Fi, Bluetooth e dados móveis sem gerar nenhum empuxo vertical.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 font-bold">✕</span>
+                            <span>Mantém o aparelho 100% colado na mesa, desperdiçando o potencial cinético do motor de vibração.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 font-bold">✕</span>
+                            <span>Não gera adrenalina em reuniões silenciosas nem fomenta a economia local de troca de telas.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- AeroMode Solution Card -->
+                <div class="rounded-3xl bg-gradient-to-br from-slate-900 via-sky-950/30 to-indigo-950/30 border border-sky-500/40 p-8 relative overflow-hidden shadow-xl shadow-sky-500/10">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-mono font-bold mb-5">
+                        ✈️ AEROMODE™ (MODO AVIÃO REAL)
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Propulsão Real e Zero Estabilidade</h3>
+                    <ul class="space-y-3.5 text-sm text-slate-200">
+                        <li class="flex items-start gap-3">
+                            <span class="text-sky-400 font-bold">✓</span>
+                            <span>Transforma qualquer smartphone comum em uma aeronave não tripulada de curtíssimo alcance.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-sky-400 font-bold">✓</span>
+                            <span>Alcança até <strong class="text-sky-300">11,2 centímetros de altitude</strong> utilizando exclusivamente ondas acústicas e convecção térmica.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-sky-400 font-bold">✓</span>
+                            <span>Trajetória 100% imprevisível: pode pousar no sofá, no café quente ou na quina do porcelanato.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: TECNOLOGIA PROPRIETÁRIA (3 PILARES) -->
+    <section id="tecnologia" class="py-20 border-t border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-sky-400">Engenharia Aeroespacial de Bolso</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-white mt-2 mb-4">Tecnologia Proprietária</h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Três patentes pendentes que desafiam o bom senso, as diretrizes da ANAC e os limites térmicos do lítio.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
+                <!-- Pillar 1 -->
+                <div class="rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-sky-500/40 p-7 transition group">
+                    <div class="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition">
+                        📳
+                    </div>
+                    <div class="text-xs font-mono text-sky-400 mb-1">01 // TAPTIC THRUST ENGINE™</div>
+                    <h3 class="text-xl font-bold text-white mb-3">Propulsão Háptica de Alta Frequência</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Forçamos o micro-motor de vibração a atingir <strong class="text-slate-200">48.000 RPM</strong>, criando micro-ondas de choque acústico que reduzem o atrito com a superfície em até 14% e iniciam o deslocamento lateral descontrolado.
+                    </p>
+                </div>
+
+                <!-- Pillar 2 -->
+                <div class="rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-amber-500/40 p-7 transition group">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition">
+                        🔥
+                    </div>
+                    <div class="text-xs font-mono text-amber-400 mb-1">02 // CHROMIUM CONVECTION™</div>
+                    <h3 class="text-xl font-bold text-white mb-3">Sustentação Térmica Instantânea</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Nosso daemon abre <strong class="text-slate-200">400 instâncias invisíveis do Google Chrome</strong> simultaneamente, elevando a carcaça a <strong class="text-amber-300">82°C</strong> e formando um colchão de ar quente ascendente sob o dispositivo.
+                    </p>
+                </div>
+
+                <!-- Pillar 3 -->
+                <div class="rounded-3xl bg-slate-900/70 border border-slate-800 hover:border-rose-500/40 p-7 transition group">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 transition">
+                        🧱
+                    </div>
+                    <div class="text-xs font-mono text-rose-400 mb-1">03 // ZERO-WING GEOMETRY™</div>
+                    <h3 class="text-xl font-bold text-white mb-3">Aerodinâmica de Tijolo</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Sem asas, sem leme e sem estabilizadores. Graças ao formato retangular não-aerodinâmico padrão da indústria, o aparelho atinge <strong class="text-slate-200">3 a 11 cm de altitude por 1,8 segundo</strong> antes de colidir violentamente.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: SIMULADOR INTERATIVO DE PLANOS & RISCO DE IMPACTO -->
+    <section id="simulador-planos" class="py-20 border-t border-slate-800/80 bg-aero-900/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-sky-400">Sky-as-a-Service (SaaS)</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-white mt-2 mb-4">Simulador de Planos & Risco de Impacto</h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Escolha sua assinatura mensal e configure o ambiente ao seu redor para calcular a altitude estimada, chance de tela quebrada e prejuízo anual com assistências técnicas.
+                </p>
+            </div>
+
+            <!-- Plan Cards Selector -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <!-- Plan 1: Econômico -->
+                <div id="planCard-economico" onclick="selectPlan('economico')" class="rounded-3xl bg-slate-900 border-2 border-sky-500 p-6 cursor-pointer transition relative shadow-lg shadow-sky-500/10">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-mono uppercase font-bold text-sky-400">Plano 01</span>
+                        <span id="badge-economico" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-sky-500 text-slate-950 font-bold">Selecionado</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-white">Plano Econômico</h3>
+                    <div class="text-3xl font-black text-white my-3">Grátis <span class="text-xs font-normal text-slate-400">/mês</span></div>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li>• 1 decolagem por dia</li>
+                        <li>• Zero controle de direção</li>
+                        <li>• Garantia anulada automaticamente ao tocar no ícone</li>
+                    </ul>
+                </div>
+
+                <!-- Plan 2: Primeira Classe -->
+                <div id="planCard-primeira" onclick="selectPlan('primeira')" class="rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 p-6 cursor-pointer transition relative">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-mono uppercase font-bold text-indigo-400">Plano 02 • Mais Popular</span>
+                        <span id="badge-primeira" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-sky-500 text-slate-950 font-bold">Selecionado</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-white">Plano Primeira Classe</h3>
+                    <div class="text-3xl font-black text-white my-3">R$ 49,90 <span class="text-xs font-normal text-slate-400">/mês</span></div>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li>• Desbloqueia o <strong class="text-indigo-300">Modo Turbulência</strong> (vibração aleatória em reuniões)</li>
+                        <li>• Alerta sonoro de comissária de bordo antes do impacto</li>
+                        <li>• Telemetria de caixa-preta na nuvem</li>
+                    </ul>
+                </div>
+
+                <!-- Plan 3: AeroCare+ -->
+                <div id="planCard-aerocare" onclick="selectPlan('aerocare')" class="rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 p-6 cursor-pointer transition relative">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-mono uppercase font-bold text-emerald-400">Plano 03 • Proteção Máxima</span>
+                        <span id="badge-aerocare" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-sky-500 text-slate-950 font-bold">Selecionado</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-white">AeroCare+ (Seguro)</h3>
+                    <div class="text-3xl font-black text-white my-3">R$ 199,90 <span class="text-xs font-normal text-slate-400">/mês</span></div>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li>• Cobre até <strong class="text-emerald-300">15% do valor</strong> de uma tela nova</li>
+                        <li>• Inclui capacete de proteção ocular para uso interno</li>
+                        <li>• Desconto de 5% em películas de vidro temperado</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Interactive Environment Controls & Live Risk Dashboard -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 rounded-3xl bg-slate-950 border border-slate-800 p-6 sm:p-10 shadow-2xl">
+                
+                <!-- Left: Sliders & Toggles -->
+                <div class="lg:col-span-6 space-y-6">
+                    <h4 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span>🎛️</span>
+                        <span>Parâmetros do Ambiente de Voo</span>
+                    </h4>
+
+                    <!-- Table Height Slider -->
+                    <div>
+                        <div class="flex justify-between text-xs font-mono mb-2">
+                            <span class="text-slate-300">Altura da Mesa / Bancada</span>
+                            <span id="tableHeightVal" class="text-sky-400 font-bold">80 cm</span>
+                        </div>
+                        <input type="range" id="tableHeightInput" min="40" max="150" value="80" oninput="updateSimulator()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                            <span>Mesa de centro (40cm)</span>
+                            <span>Bancada alta (150cm)</span>
+                        </div>
+                    </div>
+
+                    <!-- Case Weight Slider -->
+                    <div>
+                        <div class="flex justify-between text-xs font-mono mb-2">
+                            <span class="text-slate-300">Peso da Capinha / Acessórios</span>
+                            <span id="caseWeightVal" class="text-sky-400 font-bold">35 g (Padrão)</span>
+                        </div>
+                        <input type="range" id="caseWeightInput" min="0" max="120" value="35" oninput="updateSimulator()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                            <span>Sem capinha (0g)</span>
+                            <span>Capinha blindada tijolo (120g)</span>
+                        </div>
+                    </div>
+
+                    <!-- Floor Type Selector -->
+                    <div>
+                        <label class="block text-xs font-mono text-slate-300 mb-2">Tipo de Piso Abaixo da Mesa</label>
+                        <div class="grid grid-cols-3 gap-2.5">
+                            <button type="button" id="floor-carpete" onclick="setFloor('carpete')" class="py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-xs font-semibold text-slate-300 hover:border-sky-400 transition cursor-pointer">
+                                🧶 Carpete
+                            </button>
+                            <button type="button" id="floor-madeira" onclick="setFloor('madeira')" class="py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-xs font-semibold text-slate-300 hover:border-sky-400 transition cursor-pointer">
+                                🪵 Madeira
+                            </button>
+                            <button type="button" id="floor-porcelanato" onclick="setFloor('porcelanato')" class="py-2.5 px-3 rounded-xl border-2 border-sky-500 bg-sky-500/10 text-xs font-bold text-sky-300 transition cursor-pointer">
+                                💎 Porcelanato
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Silent Meeting Toggle -->
+                    <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900 border border-slate-800">
+                        <div>
+                            <div class="text-sm font-bold text-white">Reunião Silenciosa com Diretoria</div>
+                            <div class="text-xs text-slate-400">Multiplica o constrangimento acústico e ativa turbulência</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="meetingToggle" onchange="updateSimulator()" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Right: Calculated Output Metrics -->
+                <div class="lg:col-span-6 flex flex-col justify-between rounded-2xl bg-slate-900/90 border border-slate-800 p-6">
+                    <div>
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+                            <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Diagnóstico de Voo</span>
+                            <span id="simPlanLabel" class="px-2.5 py-1 rounded-lg bg-sky-500/15 text-sky-400 font-mono text-xs font-bold">Plano Econômico</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                                <div class="text-[11px] font-mono text-slate-400">Altitude Estimada</div>
+                                <div id="simAltitude" class="text-2xl sm:text-3xl font-mono font-black text-sky-400 mt-1">8.4 cm</div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                                <div class="text-[11px] font-mono text-slate-400">Chance de Tela Quebrada</div>
+                                <div id="simCrackChance" class="text-2xl sm:text-3xl font-mono font-black text-rose-400 mt-1">94%</div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                                <div class="text-[11px] font-mono text-slate-400">Assinatura Mensal</div>
+                                <div id="simMonthlyCost" class="text-xl sm:text-2xl font-mono font-extrabold text-white mt-1">R$ 0,00</div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                                <div class="text-[11px] font-mono text-slate-400">Prejuízo Anual (Assistência)</div>
+                                <div id="simAnnualLoss" class="text-xl sm:text-2xl font-mono font-extrabold text-amber-400 mt-1">R$ 4.850</div>
+                            </div>
+                        </div>
+
+                        <!-- Algorithm Verdict -->
+                        <div class="p-4 rounded-2xl bg-sky-950/30 border border-sky-500/30 mb-6">
+                            <div class="text-[11px] font-mono font-bold uppercase text-sky-400 mb-1">Veredito do Algoritmo AeroAI™</div>
+                            <p id="simVerdict" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                                Risco crítico de impacto em porcelanato. Recomendamos assinar o AeroCare+ imediatamente ou colocar um travesseiro embaixo da mesa.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button onclick="openModal('Assinatura Confirmada!', 'Parabéns! Seu plano foi ativado. Lembre-se: a AeroPhone Technologies não se responsabiliza caso seu smartphone decole pela janela do escritório durante uma call.')" class="w-full py-3.5 px-6 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm uppercase tracking-wide shadow-lg shadow-sky-500/20 transition cursor-pointer">
+                        Assinar Plano Selecionado
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: TRAÇÃO & ROADMAP v2.0 -->
+    <section id="roadmap" class="py-20 border-t border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Traction Metrics -->
+            <div class="mb-16">
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <span class="text-xs font-mono font-bold uppercase tracking-widest text-sky-400">Métricas Auditadas (Q3 2026)</span>
+                    <h2 class="text-3xl font-black text-white mt-2">Tração Explosiva</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-7 rounded-3xl bg-slate-900/70 border border-slate-800 text-center">
+                        <div class="text-4xl sm:text-5xl font-black text-sky-400 font-mono mb-2">+1,4M</div>
+                        <div class="text-sm font-bold text-white mb-1">Downloads na 1ª Semana</div>
+                        <p class="text-xs text-slate-400">Impulsionados por vídeos virais de celulares batendo no teto de carros.</p>
+                    </div>
+                    <div class="p-7 rounded-3xl bg-slate-900/70 border border-slate-800 text-center">
+                        <div class="text-4xl sm:text-5xl font-black text-rose-400 font-mono mb-2">98,7%</div>
+                        <div class="text-sm font-bold text-white mb-1">Taxa de Churn Recorde</div>
+                        <p class="text-xs text-slate-400">Usuários cancelam porque perdem o aparelho pela janela ou quebram o display no 1º voo.</p>
+                    </div>
+                    <div class="p-7 rounded-3xl bg-slate-900/70 border border-slate-800 text-center">
+                        <div class="text-4xl sm:text-5xl font-black text-emerald-400 font-mono mb-2">B2B</div>
+                        <div class="text-sm font-bold text-white mb-1">Sinergia Estratégica</div>
+                        <p class="text-xs text-slate-400">Parceria oficial com a Associação Nacional de Fabricantes de Películas de Vidro.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roadmap v2.0 Preview: Modo Submarino™ -->
+            <div class="rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-cyan-950 border border-indigo-500/40 p-8 sm:p-12 relative overflow-hidden">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-8 relative z-10">
+                    <div class="max-w-2xl">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-mono font-bold mb-4">
+                            🌊 ROADMAP v2.0 • EM DESENVOLVIMENTO (SEED US$ 5M)
+                        </div>
+                        <h3 class="text-2xl sm:text-4xl font-black text-white mb-4">
+                            Próximo Lançamento: <span class="text-cyan-300">Modo Submarino™ v2.0</span>
+                        </h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                            Cansado da certificação IP68 que apenas resiste a respingos? O <strong>Modo Submarino™</strong> utiliza ondas ultrassônicas de alta densidade para aumentar artificialmente a massa específica do seu smartphone, fazendo-o <strong>afundar imediatamente até o ponto mais profundo do oceano mais próximo</strong>.
+                        </p>
+                        <button onclick="openModal('Lista de Espera — Modo Submarino™ v2.0', 'Você entrou na fila prioritária para o beta fechado do Modo Submarino™. Recomendamos testar apenas próximo à Fossa das Marianas ou em piscinas olímpicas.')" class="px-6 py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wide transition cursor-pointer">
+                            Entrar na Lista de Espera Beta
+                        </button>
+                    </div>
+
+                    <div class="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl bg-slate-950/80 border border-cyan-500/30 flex flex-col items-center justify-center text-center p-4 shadow-2xl">
+                        <span class="text-5xl mb-2">🤿</span>
+                        <span class="text-xs font-mono font-bold text-cyan-300">PROFUNDIDADE ALVO</span>
+                        <span class="text-xl font-mono font-black text-white mt-1">-10.994 m</span>
+                        <span class="text-[10px] font-mono text-slate-400 mt-1">Sem retorno garantido</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER & HUMOROUS LEGAL DISCLAIMER -->
+    <footer class="border-t border-slate-800/80 bg-aero-950 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-8 border-b border-slate-800/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center text-slate-950 font-black">✈</div>
+                    <span class="font-bold text-white">AeroPhone Technologies Inc.</span>
+                </div>
+                <div class="text-xs font-mono text-slate-500">
+                    Palo Alto, CA • Faria Lima, SP • Espaço Aéreo Não Controlado
+                </div>
+            </div>
+
+            <div class="pt-8 text-xs text-slate-500 leading-relaxed space-y-2">
+                <p>
+                    <strong>Aviso Legal & Isenção de Responsabilidade Aeronáutica:</strong> A AeroPhone Technologies Inc. não se responsabiliza por smartphones que tentarem migrar para o sul durante o inverno, colisões com lustres de cristal, queda em xícaras de café quente ou processos administrativos da ANAC por invasão de espaço aéreo doméstico sem plano de voo homologado.
+                </p>
+                <p class="font-mono text-[11px] text-slate-600">
+                    © 2026 AeroPhone Technologies Inc. Todos os direitos reservados. Nenhum smartphone real foi arremessado durante a renderização desta página.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CUSTOM MESSAGE MODAL (Replaces alert()) -->
+    <div id="infoModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-sky-500/40 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl font-bold cursor-pointer">✕</button>
+            <div class="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-2xl mb-4">✈️</div>
+            <h3 id="modalTitle" class="text-xl font-black text-white mb-2">Aviso da Torre</h3>
+            <p id="modalBody" class="text-sm text-slate-300 leading-relaxed mb-6">Mensagem.</p>
+            <button onclick="closeModal()" class="w-full py-3 px-5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition cursor-pointer">
+                Entendido, Autorizar Decolagem
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- WEB AUDIO API SYNTHESIZER (No external URLs needed) ---
+        let audioEnabled = false;
+        let audioCtx = null;
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('soundIcon');
+            const label = document.getElementById('soundLabel');
+            if (audioEnabled) {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                icon.textContent = '🔊';
+                label.textContent = 'Som: ON';
+                playTone(520, 'sine', 0.12, 0.15);
+            } else {
+                icon.textContent = '🔇';
+                label.textContent = 'Som: OFF';
+            }
+        }
+
+        function playTone(freq, type, duration, volume = 0.15) {
+            if (!audioEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                // Ignore audio context autoplay limits
+            }
+        }
+
+        function playFlightSounds() {
+            if (!audioEnabled || !audioCtx) return;
+            // Cabin chime (Ding-Dong)
+            playTone(659.25, 'sine', 0.35, 0.18);
+            setTimeout(() => playTone(523.25, 'sine', 0.45, 0.18), 320);
+            // Haptic motor spin-up buzz
+            setTimeout(() => playTone(110, 'sawtooth', 1.4, 0.12), 700);
+            // Crash thud
+            setTimeout(() => playTone(65, 'square', 0.35, 0.25), 2550);
+        }
+
+        // --- HERO FLIGHT SIMULATOR LOGIC ---
+        let flightState = 'idle'; // 'idle' | 'flying' | 'crashed'
+        let telemetryInterval = null;
+
+        function triggerFlightSimulation() {
+            if (flightState === 'flying') return;
+            if (flightState === 'crashed') {
+                resetFlightSimulation();
+                return;
+            }
+
+            flightState = 'flying';
+            playFlightSounds();
+
+            const phone = document.getElementById('phoneDevice');
+            const phaseTag = document.getElementById('flightPhaseTag');
+            const log = document.getElementById('telemetryLog');
+            const chromeBadge = document.getElementById('chromeTabsBadge');
+            const thermal = document.getElementById('thermalOverlay');
+            const modeText = document.getElementById('phoneModeText');
+            const heroBtn = document.getElementById('heroLaunchBtn');
+
+            // Phase 1: Spooling up haptic motor & Chrome tabs
+            phone.classList.add('phone-vibrating');
+            thermal.classList.remove('hidden');
+            phaseTag.textContent = 'IGNIÇÃO HÁPTICA';
+            phaseTag.className = 'text-amber-400 font-bold';
+            modeText.textContent = 'DECOLANDO...';
+            chromeBadge.textContent = 'Chrome: 400 abas';
+            chromeBadge.className = 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold';
+            log.textContent = 'Overclocking a 48.000 RPM... Abrindo 400 abas do Chrome para sustentação térmica...';
+            heroBtn.disabled = true;
+            heroBtn.classList.add('opacity-60');
+
+            let step = 0;
+            telemetryInterval = setInterval(() => {
+                step++;
+                const rpm = Math.min(48000, step * 8000);
+                const temp = Math.min(82.0, 34 + step * 8).toFixed(1);
+                document.getElementById('statRpm').textContent = rpm.toLocaleString('pt-BR') + ' RPM';
+                document.getElementById('statTemp').textContent = temp + ' °C';
+            }, 120);
+
+            // Phase 2: Liftoff (11.2 cm altitude for 1.8s)
+            setTimeout(() => {
+                phone.classList.remove('phone-vibrating');
+                phone.classList.add('phone-flying');
+                phaseTag.textContent = 'EM VOO (SEM LEME)';
+                phaseTag.className = 'text-sky-400 font-bold';
+                document.getElementById('statAlt').textContent = '11.2 cm';
+                document.getElementById('tableSurface').classList.add('scale-75', 'opacity-40');
+                log.textContent = 'SUSTENTAÇÃO ATINGIDA! Altitude: 11.2 cm. Alerta: zero estabilidade aerodinâmica!';
+            }, 750);
+
+            // Phase 3: Crash & Cracked Screen
+            setTimeout(() => {
+                clearInterval(telemetryInterval);
+                phone.classList.remove('phone-flying');
+                phone.classList.add('phone-crashed');
+                thermal.classList.add('hidden');
+                document.getElementById('crackedScreenOverlay').classList.remove('hidden');
+                document.getElementById('tableSurface').classList.remove('scale-75', 'opacity-40');
+
+                flightState = 'crashed';
+                phaseTag.textContent = 'IMPACTO CRÍTICO';
+                phaseTag.className = 'text-rose-500 font-bold';
+                modeText.textContent = 'TELA TRINCADA';
+                document.getElementById('statRpm').textContent = '0 RPM';
+                document.getElementById('statAlt').textContent = '0.0 cm';
+                document.getElementById('statusLed').className = 'w-2 h-2 rounded-full bg-rose-500';
+                log.textContent = 'COLISÃO DE QUINA DETECTADA. Duração do voo: 1.8s. Garantia oficial anulada com sucesso.';
+
+                document.getElementById('repairPhoneBtn').classList.remove('hidden');
+                document.getElementById('safeHintText').classList.add('hidden');
+                heroBtn.disabled = false;
+                heroBtn.classList.remove('opacity-60');
+            }, 2550);
+        }
+
+        function resetFlightSimulation() {
+            flightState = 'idle';
+            const phone = document.getElementById('phoneDevice');
+            phone.classList.remove('phone-vibrating', 'phone-flying', 'phone-crashed');
+
+            document.getElementById('crackedScreenOverlay').classList.add('hidden');
+            document.getElementById('thermalOverlay').classList.add('hidden');
+            document.getElementById('repairPhoneBtn').classList.add('hidden');
+            document.getElementById('safeHintText').classList.remove('hidden');
+
+            document.getElementById('flightPhaseTag').textContent = 'STANDBY';
+            document.getElementById('flightPhaseTag').className = 'text-sky-400 font-bold';
+            document.getElementById('phoneModeText').textContent = 'Ativar AeroMode™';
+            document.getElementById('chromeTabsBadge').textContent = 'Chrome: 1 aba';
+            document.getElementById('chromeTabsBadge').className = 'px-2 py-0.5 rounded bg-slate-800 text-slate-300';
+            document.getElementById('statusLed').className = 'w-2 h-2 rounded-full bg-emerald-400';
+
+            document.getElementById('statRpm').textContent = '0 RPM';
+            document.getElementById('statTemp').textContent = '34.0 °C';
+            document.getElementById('statAlt').textContent = '0.0 cm';
+            document.getElementById('telemetryLog').textContent = 'Fita adesiva aplicada no vidro. Pronto para nova decolagem irresponsável.';
+        }
+
+        // --- INTERACTIVE PLAN & RISK SIMULATOR LOGIC ---
+        let selectedPlan = 'economico';
+        let selectedFloor = 'porcelanato';
+
+        function selectPlan(planId) {
+            selectedPlan = planId;
+            ['economico', 'primeira', 'aerocare'].forEach(id => {
+                const card = document.getElementById('planCard-' + id);
+                const badge = document.getElementById('badge-' + id);
+                if (id === planId) {
+                    card.className = 'rounded-3xl bg-slate-900 border-2 border-sky-500 p-6 cursor-pointer transition relative shadow-lg shadow-sky-500/10';
+                    badge.classList.remove('hidden');
+                } else {
+                    card.className = 'rounded-3xl bg-slate-900 border-2 border-slate-800 hover:border-slate-700 p-6 cursor-pointer transition relative';
+                    badge.classList.add('hidden');
+                }
+            });
+            updateSimulator();
+        }
+
+        function setFloor(floorId) {
+            selectedFloor = floorId;
+            ['carpete', 'madeira', 'porcelanato'].forEach(id => {
+                const btn = document.getElementById('floor-' + id);
+                if (id === floorId) {
+                    btn.className = 'py-2.5 px-3 rounded-xl border-2 border-sky-500 bg-sky-500/10 text-xs font-bold text-sky-300 transition cursor-pointer';
+                } else {
+                    btn.className = 'py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-xs font-semibold text-slate-300 hover:border-sky-400 transition cursor-pointer';
+                }
+            });
+            updateSimulator();
+        }
+
+        function updateSimulator() {
+            const tableHeight = parseInt(document.getElementById('tableHeightInput').value, 10);
+            const caseWeight = parseInt(document.getElementById('caseWeightInput').value, 10);
+            const silentMeeting = document.getElementById('meetingToggle').checked;
+
+            document.getElementById('tableHeightVal').textContent = tableHeight + ' cm';
+            document.getElementById('caseWeightVal').textContent = caseWeight + ' g' + (caseWeight === 0 ? ' (Nu)' : caseWeight > 80 ? ' (Tijolo)' : '');
+
+            // Altitude calculation (lighter case = higher flight, 3.0 to 11.2 cm)
+            let altitude = Math.max(3.0, Math.min(11.2, 11.2 - (caseWeight * 0.065)));
+            if (selectedPlan === 'primeira') altitude = Math.min(11.2, altitude + 0.4);
+
+            // Crack probability calculation
+            let floorRisk = selectedFloor === 'porcelanato' ? 35 : selectedFloor === 'madeira' ? 18 : 4;
+            let heightRisk = Math.round((tableHeight - 40) * 0.28);
+            let weightPenalty = Math.round(caseWeight * 0.12);
+            let meetingPenalty = silentMeeting ? 12 : 0;
+            let planMitigation = selectedPlan === 'aerocare' ? -18 : selectedPlan === 'primeira' ? -5 : 0;
+
+            let crackChance = Math.max(12, Math.min(99, 32 + floorRisk + heightRisk + weightPenalty + meetingPenalty + planMitigation));
+
+            // Monthly cost & Annual repair loss
+            let monthlyPrice = selectedPlan === 'economico' ? 0 : selectedPlan === 'primeira' ? 49.90 : 199.90;
+            let screenRepairCost = 1450;
+            let coverageDiscount = selectedPlan === 'aerocare' ? 0.85 : 1.0; // 15% covered on AeroCare+
+            let expectedCrashesPerYear = (crackChance / 100) * 4.2;
+            let annualLoss = Math.round(expectedCrashesPerYear * screenRepairCost * coverageDiscount);
+
+            // Update DOM outputs
+            const planNames = {
+                economico: 'Plano Econômico',
+                primeira: 'Plano Primeira Classe',
+                aerocare: 'AeroCare+ (Seguro)'
+            };
+
+            document.getElementById('simPlanLabel').textContent = planNames[selectedPlan];
+            document.getElementById('simAltitude').textContent = altitude.toFixed(1) + ' cm';
+            document.getElementById('simCrackChance').textContent = crackChance + '%';
+            document.getElementById('simMonthlyCost').textContent = 'R$ ' + monthlyPrice.toFixed(2).replace('.', ',');
+            document.getElementById('simAnnualLoss').textContent = 'R$ ' + annualLoss.toLocaleString('pt-BR');
+
+            // Verdict text
+            let verdict = '';
+            if (selectedFloor === 'porcelanato' && crackChance >= 80) {
+                verdict = 'Perigo extremo de estilhaçamento em porcelanato! Recomendamos usar o capacete ocular do AeroCare+ ou realizar voos apenas sobre colchões.';
+            } else if (silentMeeting && selectedPlan === 'primeira') {
+                verdict = 'Modo Turbulência armado: o alerta sonoro da comissária de bordo irá constranger toda a diretoria 0,4s antes do celular cair da mesa.';
+            } else if (selectedFloor === 'carpete') {
+                verdict = 'Piso de carpete amortece o impacto, mas o superaquecimento de 82°C pode deixar uma marca permanente de torradeira no tecido.';
+            } else {
+                verdict = 'Parâmetros dentro da margem de irresponsabilidade aceitável da AeroPhone. Prepare a fita adesiva para o pós-pouso.';
+            }
+            document.getElementById('simVerdict').textContent = verdict;
+        }
+
+        // --- MODAL HELPERS ---
+        function openModal(title, body) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').textContent = body;
+            document.getElementById('infoModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').classList.add('hidden');
+        }
+
+        // Initialize simulator values on load
+        window.onload = function() {
+            updateSimulator();
+        };
+    </script>
+</body>
+</html>
